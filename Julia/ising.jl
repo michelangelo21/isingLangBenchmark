@@ -1,17 +1,4 @@
 using Statistics
-# using Plots
-
-
-# pgfplotsx()
-# function plot_lattice(lattice::Array{Int8}, T::Number, fn::String = "lattice.tex")
-#     lat = heatmap(lattice,aspect_ratio=1.0,size=(800,800),grid=false,framestyle=(:box), colormap_name = "hot",legend=false) #blue=-1, red=1
-#     l::Int = size(lattice)[1]::Int
-#     hline!(lat,0.5:1:l+0.5, line=(:black))
-#     vline!(lat,0.5:1:l+0.5, line=(:black))
-#     title!(lat,"L=$l, T=$T")
-#     savefig(lat, fn)
-#     plot(lat)
-# end
 
 function ising(L::Int, T::Number, next_I, prev_I; MCS=230_000::Int)
     lattice = ones(Int8, L,L)
@@ -25,9 +12,9 @@ function ising(L::Int, T::Number, next_I, prev_I; MCS=230_000::Int)
     for k=1 : MCS
         for i=1:L, j=1:L
         #metropolis algorithm
-            ΔE::Int = 2 * lattice[i,j] * (lattice[next_I[i],j] + lattice[prev_I[i],j] + lattice[i,next_I[j]] + lattice[i,prev_I[j]])
+            @inbounds ΔE::Int = 2 * lattice[i,j] * (lattice[next_I[i],j] + lattice[prev_I[i],j] + lattice[i,next_I[j]] + lattice[i,prev_I[j]])
             if (ΔE ≤ 0) || (rand() ≤ boltzmann_factor[ΔE÷4 + 3])
-                lattice[i,j] *= -1
+                @inbounds lattice[i,j] *= -1
             end
         end
 
@@ -37,7 +24,7 @@ function ising(L::Int, T::Number, next_I, prev_I; MCS=230_000::Int)
             E::Float64 = 0.0
             for i=1:L, j=1:L
                 # E += 0.5 * lattice[i,j] * (lattice[next_I[i],j] + lattice[prev_I[i],j] + lattice[i,next_I[j]] + lattice[i,prev_I[j]])
-                E += lattice[i,j] * (lattice[next_I[i],j] + lattice[i,next_I[j]])
+                @inbounds E += lattice[i,j] * (lattice[next_I[i],j] + lattice[i,next_I[j]])
             end
             push!(energies, E)
         end
